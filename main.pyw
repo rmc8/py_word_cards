@@ -58,7 +58,6 @@ class WordCards:
         return deck_list
     
     def update(self, update_list: list) -> None:
-        print(self.df.columns)
         for foreign, native, flag in update_list:
             self.df.loc[(self.df["foreign_lang"] == foreign) &
                         (self.df["native_lang"] == native),
