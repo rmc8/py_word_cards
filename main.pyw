@@ -73,7 +73,7 @@ class MemorizationApp:
         self.archive_list: list = []
         layout = [[sg.Text("", key="foreign_lng", font=("Arial 20"), size=(24, 1))],
                   [sg.Text("", key="native_lng", font=("Consolas 16"), size=(12, 2))],
-                  [sg.Checkbox("Shuffle the words", key="flag")],
+                  [sg.Checkbox("Flag", key="flag")],
                   [
                       sg.Button("Display the meaning", size=(24, 2), key="display"),
                       sg.Button("Next", size=(24, 2))
