@@ -1,15 +1,15 @@
 import os
-from random import shuffle as shf
 from glob import glob
 from typing import Optional
+from random import shuffle as shf
 
 import pandas as pd
 import PySimpleGUI as sg
 
 
 def setup_the_card(card_path_list: list) -> Optional[dict]:
-    cards_dict = {os.path.basename(path): path for path in card_path_list}
-    menu_values = list(cards_dict.keys())
+    cards_dict: dict = {os.path.basename(path): path for path in card_path_list}
+    menu_values: list = list(cards_dict.keys())
     layout = [[sg.Text("Please choose a card to use for learning!")],
               [sg.Combo(menu_values, size=(48, 2))],
               [sg.Checkbox("Shuffle the words")],
@@ -19,7 +19,7 @@ def setup_the_card(card_path_list: list) -> Optional[dict]:
     window = sg.Window("Setup the card", layout)
     
     # Event Loop to process "events" and get the "values" of the inputs
-    ret = None
+    ret: Optional[dict] = None
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED or event == "Exit":
@@ -27,7 +27,8 @@ def setup_the_card(card_path_list: list) -> Optional[dict]:
         elif event == "OK":
             if not values[0]:
                 sg.popup("Please select a card.")
-            path = cards_dict.get(values[0])
+                continue
+            path: Optional[str] = cards_dict.get(values[0])
             ret = {"card_path": path, "shuffle": values[1], "flag_only": values[2]}
             break
     window.close()
@@ -52,7 +53,7 @@ class WordCards:
         deck = self.df
         if self.flag_only:
             deck = deck[deck["flag"] == self.flag_only]
-        deck_list = deck.values.tolist()
+        deck_list: list = deck.values.tolist()
         if self.shuffle:
             shf(deck_list)
         return deck_list
@@ -66,10 +67,10 @@ class WordCards:
 
 
 class MemorizationApp:
-    def __init__(self, deck: list, file_name: str):
-        self.name = file_name
-        self.deck = deck
-        self.archive_list = []
+    def __init__(self, deck: list, file_name: str) -> None:
+        self.name: str = file_name
+        self.deck: list = deck
+        self.archive_list: list = []
         layout = [[sg.Text("", key="foreign_lng", font=("Arial 20"), size=(24, 1))],
                   [sg.Text("", key="native_lng", font=("Consolas 16"), size=(12, 2))],
                   [sg.Checkbox("Shuffle the words", key="flag")],
@@ -79,7 +80,7 @@ class MemorizationApp:
                   ], ]
         self.window = sg.Window(self.name, layout, finalize=True)
     
-    def show_word(self, foreign, native, flag):
+    def show_word(self, foreign: str, native: str, flag: bool) -> tuple:
         self.window["foreign_lng"].update(foreign)
         self.window["native_lng"].update("")
         self.window["flag"].update(flag)
@@ -93,16 +94,16 @@ class MemorizationApp:
                 break
         return False, values["flag"]
     
-    def learning(self):
+    def learning(self) -> None:
         for foreign_lng, native_lng, flag in self.deck:
             is_exit, update_flg = self.show_word(foreign_lng, native_lng, flag)
             if is_exit:
                 break
-            rec = (foreign_lng, native_lng, update_flg)
+            rec: tuple = (foreign_lng, native_lng, update_flg)
             self.archive_list.append(rec)
         self.window.close()
     
-    def get_new_data(self):
+    def get_new_data(self) -> list:
         return self.archive_list
 
 
@@ -110,7 +111,7 @@ def main():
     sg.theme("black")
     while True:
         cards: list = glob("./cards/*.csv")
-        card_setting = setup_the_card(cards)
+        card_setting: dict = setup_the_card(cards)
         if card_setting is None:
             exit()
         wc = WordCards(**card_setting)
@@ -118,10 +119,10 @@ def main():
         card_exist: bool = check_card_exits(deck)
         if not card_exist:
             continue
-        name = os.path.basename(card_setting["card_path"])
+        name: str = os.path.basename(card_setting["card_path"])
         ma = MemorizationApp(deck, name)
         ma.learning()
-        new_deck = ma.get_new_data()
+        new_deck: list = ma.get_new_data()
         wc.update(new_deck)
         sg.popup(f"You have completed learning the deck ({name})!")
 
